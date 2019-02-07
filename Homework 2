@@ -1,0 +1,490 @@
+     
+
+ITEC 621 - Homework 2 -
+
+Zach Maddigan
+
+02,06,2019
+
+Note: save this file with the name HW1_YourLastName.Rmd [or HW2, etc.) and complete your homework in it.
+
+Note: this is a template for HW1, but you should use a similar template for HW2, 3 and 4, and also for your final project. Treat this homework and your project as a report. Format it and present it in a way that is attractive, easy to follow and businesslike. All your work should be labeled, numbered (if appropriate) and introduced. Overall, you should follow a format like this:
+#load data and packages:
+library(car)
+library(ggplot2)
+library(GGally)
+data("Salaries")
+
+1.1 Prepare and display a histogram for the response variable of interest: salary Explanation or narrative
+# histogram of salares
+hist(Salaries$salary, xlab = "Salary", main ="Histogram of Salary")
+
+ 1.2 Prepare a qqplot with a qqline line for salary
+qqnorm(Salaries$salary)
+qqline(Salaries$salary)
+
+
+
+1.3 Answer briefly: based on your review of the data, is salary somewhat normally distributed? Why or why not?
+#I would say based off the histogram the data has a slight skew to the right - 
+
+1.4 Using the ggpairs(){GGally} function, display a correlation chart with all variables
+ggpairs(Salaries)
+
+
+
+1.5 Answer briefly: based on your review of the data, does it appear to be a salary gender gap? Why or why not? 
+#creating boxplot for better view 
+boxplot(Salaries$sex, Salaries$salary)
+
+
+#yes, there is an extreme salary gender gap. If we look at the box plot we see that the dark line in the middle of the box (represents the median salary for the two sexes) is in very different locations.Additionally, the whiskers portion of the boxplots are very different as well. The men's extends much further than womens, 
+
+1.6 Answer briefly: are there any other observations from the correlation chart worth noting? Please elaborate.
+#it was interesting to notice that there was a relatively strong correlation between yrs of service and salary(.335) as well as yrs since PhD and salary (.419). Additionally, when looking at sex distributions they appear to be disevenly distributed amongst rank, discipline, and salary. ```
+6.2.1 Fit an OLS regression model that predicts salaries on sex (only) and store the results in an object named “fit.sexonly”. Then use the summary() function to view the results of this mode.
+fit.sexonly<-lm(salary ~ sex, data = Salaries)
+summary(fit.sexonly)
+## 
+## Call:
+## lm(formula = salary ~ sex, data = Salaries)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -57290 -23502  -6828  19710 116455 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   101002       4809  21.001  < 2e-16 ***
+## sexMale        14088       5065   2.782  0.00567 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 30030 on 395 degrees of freedom
+## Multiple R-squared:  0.01921,    Adjusted R-squared:  0.01673 
+## F-statistic: 7.738 on 1 and 395 DF,  p-value: 0.005667
+
+2.2 Based on this result, does this model support the argument for gender salary inequality? Why or why not?
+#based on the results from the model, it does support gender salary inequality. We can tell this from looking at the p value for sexMale, which is .00567 letting us know the model suggests that salary is dependent on sex (because p-value is statistically significant). However with a relatively low R squared there is room to improve the model. 
+
+3.1 Then fit an OLS regression model that predicts salaries on ALL remaining variables and store the results in a model named “fit.all”. Use the summary() function to display the results.
+fit.all<-lm(salary~., data=Salaries)
+summary(fit.all)
+## 
+## Call:
+## lm(formula = salary ~ ., data = Salaries)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -65248 -13211  -1775  10384  99592 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)    65955.2     4588.6  14.374  < 2e-16 ***
+## rankAssocProf  12907.6     4145.3   3.114  0.00198 ** 
+## rankProf       45066.0     4237.5  10.635  < 2e-16 ***
+## disciplineB    14417.6     2342.9   6.154 1.88e-09 ***
+## yrs.since.phd    535.1      241.0   2.220  0.02698 *  
+## yrs.service     -489.5      211.9  -2.310  0.02143 *  
+## sexMale         4783.5     3858.7   1.240  0.21584    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 22540 on 390 degrees of freedom
+## Multiple R-squared:  0.4547, Adjusted R-squared:  0.4463 
+## F-statistic:  54.2 on 6 and 390 DF,  p-value: < 2.2e-16
+
+3.2 Does this larger model support the salary inequality hypothesis? Why or why not? Why do you think that results changed when more variables were added to the model?
+#the model changed quite a bit by introducing other features. We are able to see that yrs. since phd and yrs.service are stronger indicators to predicting salary. Sexmale's p-value increased, therefore reducing it's significance in the model. 
+
+4.1 Conduct an ANOVA test (use the anova() function) to compare the reduced model (fit.sexonly) against the full model (fit.all).
+anova(fit.sexonly,fit.all)
+## Analysis of Variance Table
+## 
+## Model 1: salary ~ sex
+## Model 2: salary ~ rank + discipline + yrs.since.phd + yrs.service + sex
+##   Res.Df        RSS Df Sum of Sq      F    Pr(>F)    
+## 1    395 3.5632e+11                                  
+## 2    390 1.9812e+11  5 1.582e+11 62.286 < 2.2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+4.2 According to the results of the ANOVA test, which of the two models has more predictive power? Briefly explain why. According to this analysis, what is your conclusion about whether there is a gender pay gap (note: this is not the end of this saga - we will be specifying other models later, which will yield different results.)
+#Because of the large F-statistic, indicating a strong relationship to salary, I would say model 2: fit.all has better predictive power. Additionally the p-value for fit.all<fit.sexonly, once again indiciating its significance. 
+
+5.1 We will discuss multicollinearity in depth in a few days. Because multicollinearity is a most important problem in predictive modeling, let’s get a little exposure to it. Obtain the Variance Inflation Factors (VIF’s) for each of the variables in the full model. To do this, first load the library {car} which contains the vif() function. After you load the car library enter vif(fit.all). Each variable will have a VIF score associated with it.
+vif(fit.all)
+##                   GVIF Df GVIF^(1/(2*Df))
+## rank          2.013193  2        1.191163
+## discipline    1.064105  1        1.031555
+## yrs.since.phd 7.518936  1        2.742068
+## yrs.service   5.923038  1        2.433729
+## sex           1.030805  1        1.015285
+
+5.2 Is there a problem with multicollinearity? Why or why not? Look at the column labeled GVIF. We will discuss this in more depth soon, but for now, any GVIF>5 raises a red flag, but is tolerable. Anything above 10 is severe.
+#both GVIF for yrs.since.phd and yrs.service are >5 with yrs.since.phd getting close to 10, indicating there is a slight problem with multicollinearity. 
+14.Conduct a Breusch-Pagan test for Heteroskedasticity
+library(lmtest)
+bptest(fit.all)
+## 
+##  studentized Breusch-Pagan test
+## 
+## data:  fit.all
+## BP = 65.055, df = 6, p-value = 4.205e-12
+
+5.4 Display the residual plot. Note: the plot() function with lm() objects displays 4 key linear model plots. In this case, we only need the first plot, which is the residual vs. fitted values plot. To display the first plot only, enter this command plot(fit.all, which=1).
+plot(fit.all, which = 1)
+
+
+
+Heteroskedasticity? Why or why not? In your answer, please refer to both, the BP test and the residual plot.
+#Looking at both the BP test and residual vs. fitted plot it appears heteroskedasticity does exist. Towards the left (or beginning) or the residual plot the variance between datapoints is relatively small, as the data points are grouped closer together than they are to the right of the graph. In the BP test, the p-value is slightly lower than .005 which rejects the null. 
+
+6.1 Regardless of your heteroskedasticity tests above, fit a WLS model using residuals from the full model (fit.all). Store this new model in an object named fit.all.wls. Tip: fitting a WLS model with residuals is a two step process. The first step is to run an OLS model (fit.all) and extract the residuals, which you already did above. So all you have to do now is the second step, which is to fit the WLS model, using 1/fit.all$residuals^2 as the weights. After you fit the model, display the summary() results fo your WLS model.
+a<-1/fit.all$residuals^2
+fit.all.wls<-lm(salary~., weights = a, data = Salaries)
+summary(fit.all.wls)
+## 
+## Call:
+## lm(formula = salary ~ ., data = Salaries, weights = a)
+## 
+## Weighted Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -1.2985 -1.0024 -0.8546  0.9960  1.3857 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   64897.52     710.12  91.390   <2e-16 ***
+## rankAssocProf 13372.32     350.33  38.171   <2e-16 ***
+## rankProf      45544.09     474.68  95.947   <2e-16 ***
+## disciplineB   14293.17     182.62  78.269   <2e-16 ***
+## yrs.since.phd   529.08      26.90  19.666   <2e-16 ***
+## yrs.service    -503.16      37.82 -13.303   <2e-16 ***
+## sexMale        5974.91     691.68   8.638   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.001 on 390 degrees of freedom
+## Multiple R-squared:  0.9977, Adjusted R-squared:  0.9977 
+## F-statistic: 2.846e+04 on 6 and 390 DF,  p-value: < 2.2e-16
+
+6.2 Respond briefly: based on your WLS results, is there empirical evidence of gender salary inequality? Why or why not?
+#Reviewing the WLS results show a higher R squared value as well as lower p values for all features. This model strongly indicates the geneder salary inequality as sexMale's p-value drastically changed and by running a WLS model, these indicators explain 99% of the variance in salary. 
+
+6.3 Briefly comment on the differences between the OLS and WLS models. Which one do you believe? Why and why not?
+#A major difference between the OLS and WLS models is that WLS takes into consideration the weighted residuals. Weights are applied to the most extreme residuals, which in effect pull the line closer to the points. However, this appears to be overfitting the model and therefore I believe the OLS model better. 
+
+7.1 Fit a regression model using the Cars93{MASS} data set to predict Price as a function of Type, MPG.city, AirBags and Origin. Then, display the summary() results of this model
+library(MASS)
+Cars93$AirBags<-relevel(Cars93$AirBags, ref = "Driver & Passenger")
+cars_93.fit<-lm(Price ~ Type+MPG.city+AirBags+Origin, data = Cars93)
+summary(cars_93.fit)
+## 
+## Call:
+## lm(formula = Price ~ Type + MPG.city + AirBags + Origin, data = Cars93)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -10.177  -3.853  -1.176   2.865  28.119 
+## 
+## Coefficients:
+##                    Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)         38.6020     4.7806   8.075 4.62e-12 ***
+## TypeLarge            3.0755     2.7739   1.109 0.270739    
+## TypeMidsize          5.1573     2.1830   2.362 0.020496 *  
+## TypeSmall           -0.2819     2.5978  -0.109 0.913856    
+## TypeSporty           0.3151     2.3294   0.135 0.892722    
+## TypeVan             -0.8718     2.9036  -0.300 0.764744    
+## MPG.city            -0.7957     0.1912  -4.162 7.68e-05 ***
+## AirBagsDriver only  -4.3447     1.9076  -2.278 0.025322 *  
+## AirBagsNone         -8.9089     2.2844  -3.900 0.000195 ***
+## Originnon-USA        5.1411     1.4387   3.573 0.000590 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 6.302 on 83 degrees of freedom
+## Multiple R-squared:  0.616,  Adjusted R-squared:  0.5744 
+## F-statistic: 14.79 on 9 and 83 DF,  p-value: 5.166e-14
+
+7.2 Provide a brief interpretation of the coefficient values and significance for the AirBagsDriver only and AirBagsNone predictors. Please remember to comment on the sign of the effect.
+#looking at AirBagsDriver and AirBagsNone predictors they both have very low t-values indicating they have a relationship with price. Because these numbers are negative, that indicates that as we remove airbags, price also decreases. 
+
+7.3 Relevel and Compare. Now, suppose that you want to compare prices of cars with air bags to those without airbags. Do this, please re-level the AirBags factor variable so that the reference level is changed to “None”. Then fit the regression model again after re-leveling AirBags. Display the summary() results of this model.
+Cars93$AirBags <- relevel(Cars93$AirBags, ref = "None")
+summary(lm(Price ~ Type+MPG.city+AirBags+Origin, data = Cars93)) 
+## 
+## Call:
+## lm(formula = Price ~ Type + MPG.city + AirBags + Origin, data = Cars93)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -10.177  -3.853  -1.176   2.865  28.119 
+## 
+## Coefficients:
+##                           Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)                29.6931     4.7225   6.288 1.43e-08 ***
+## TypeLarge                   3.0755     2.7739   1.109 0.270739    
+## TypeMidsize                 5.1573     2.1830   2.362 0.020496 *  
+## TypeSmall                  -0.2819     2.5978  -0.109 0.913856    
+## TypeSporty                  0.3151     2.3294   0.135 0.892722    
+## TypeVan                    -0.8718     2.9036  -0.300 0.764744    
+## MPG.city                   -0.7957     0.1912  -4.162 7.68e-05 ***
+## AirBagsDriver & Passenger   8.9089     2.2844   3.900 0.000195 ***
+## AirBagsDriver only          4.5643     1.6720   2.730 0.007735 ** 
+## Originnon-USA               5.1411     1.4387   3.573 0.000590 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 6.302 on 83 degrees of freedom
+## Multiple R-squared:  0.616,  Adjusted R-squared:  0.5744 
+## F-statistic: 14.79 on 9 and 83 DF,  p-value: 5.166e-14
+
+7.4 Inspect the coefficients in the two models (before and after re-leveling) and answer briefly: What is the difference in interpretation between the “AirBagsDrive only” coefficients between the 2 models? Explain any change in coefficient values, sign and significance.l
+#after adjusting the model, the airbag features still indicate a relationship to price. When we added "none" to the model we can infer there will be an increase in price as we add airbags. 
+
+8.1 Using the Salaries{car} data set, fit a linear model to predict salary as a function of rank and yrs.since.phd. Store the linear model in an object named “fit.linear”. Display the summary() results.
+fit.linear<-lm(salary~rank+yrs.since.phd, data=Salaries)
+summary(fit.linear)
+## 
+## Call:
+## lm(formula = salary ~ rank + yrs.since.phd, data = Salaries)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -67148 -16683  -1323  11835 105552 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   81186.23    2964.17  27.389  < 2e-16 ***
+## rankAssocProf 13932.18    4345.76   3.206  0.00146 ** 
+## rankProf      47860.42    4412.63  10.846  < 2e-16 ***
+## yrs.since.phd   -80.37     129.47  -0.621  0.53510    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 23650 on 393 degrees of freedom
+## Multiple R-squared:  0.3948, Adjusted R-squared:  0.3902 
+## F-statistic: 85.47 on 3 and 393 DF,  p-value: < 2.2e-16
+
+8.2 Answer briefly: What are the best predictors of faculty salaries? Why?
+#based off the summary the best predictors for salaries would be the rank of the professor. the p value is statistically significant and it has a high t-value indicating a relationship.
+
+8.3 Who makes higher salaries, Assistant Professors, Associate Professors or Professors? How much more, on average?
+#full professors make more than the other professor rankings. The avg. salary of all professors is 81k
+
+8.4 Does the number of years since obtaining a PhD makes a difference in the salary? Why or why not?
+#Because of the high p-value (.53510) it does not appear years since obtaining phd makes a difference or has a significant impact on salaries. Additionally there is a t-value relatively close to 0, indicating a minimal relationship to the predictor. 
+
+8.5 Then fit a polynomial model of power 4. Leave rank alone (since it is Factor variable). Apply the polynomial transformation only on the yrs.since.phd variable using the poly() function. Store the resulting model in an object named “fit.poly”. Display the summary() results.
+fit.poly<-lm(salary~rank+poly(yrs.since.phd,4), data=Salaries)
+summary(fit.poly)
+## 
+## Call:
+## lm(formula = salary ~ rank + poly(yrs.since.phd, 4), data = Salaries)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -54287 -16094  -1994  11395 103566 
+## 
+## Coefficients:
+##                         Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)                80921       5974  13.545  < 2e-16 ***
+## rankAssocProf              15277       6409   2.384   0.0176 *  
+## rankProf                   45255       7420   6.099 2.57e-09 ***
+## poly(yrs.since.phd, 4)1    -2133      44221  -0.048   0.9615    
+## poly(yrs.since.phd, 4)2   -44716      37340  -1.198   0.2318    
+## poly(yrs.since.phd, 4)3   -55759      28253  -1.974   0.0491 *  
+## poly(yrs.since.phd, 4)4    23288      24699   0.943   0.3463    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 23470 on 390 degrees of freedom
+## Multiple R-squared:  0.4086, Adjusted R-squared:  0.3995 
+## F-statistic: 44.91 on 6 and 390 DF,  p-value: < 2.2e-16
+
+8.6 Conduct an ANOVA test to evaluate if the polynomial model has more predictive power than the linear model.
+anova(fit.linear,fit.poly)
+## Analysis of Variance Table
+## 
+## Model 1: salary ~ rank + yrs.since.phd
+## Model 2: salary ~ rank + poly(yrs.since.phd, 4)
+##   Res.Df        RSS Df  Sum of Sq      F  Pr(>F)  
+## 1    393 2.1985e+11                               
+## 2    390 2.1485e+11  3 4999068143 3.0247 0.02953 *
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+8.7 Does the polynomial model have more predictive power than the linear model? Why or why not?
+#From the results of the anova, we see that the polynomial model does have better predicting power due to its p value of .0295 as well as the res. df. the res df. indicates that a more complex model uses less parameters and still is significant. 
+
+8.8 Based on these polynomial regression results, how would you interpret the effct of yrs.since.phd? (As we discussed in class, polynomials of power>2 are very hard to interpret, but give it a try)? In your answer, please look at the coefficients of all the different polynomial terms and provide a general interpretation.
+#based off the coefficients of the polynomial regression it appears if years.since.phd is in 1-3 years range, it negatively impacts your salary, however once you reach the 4+ mark, it helps you make more money.
+
+8.9 There is a well-known phenomenon in academics called “salary compression” in which newly minted PhD’s command higher salaries in the market than older professors. Take a look at the coefficient values and significance levels of both, the rank and all the polynomial terms and discuss whether you see evidence of salary compresion or not. Please briefly explain your rationale.
+#interpreting the results from both models indicate there is evidence of compression if you are within the 1-3 range, when we reach poly4 it increases salary. based off of the coefficient signs and significance of these variables. 
+
+9.1 Using the Cars93{MASS} data set, fit a model to predict a car’s price as a function of the car’s type, city miles per gallon, air bags and origin. Store the results in an object named fit.unstd and display the summary results for this linear model object.
+fit.unstd<-lm(Price~Type+MPG.city+AirBags+Origin, data = Cars93)
+summary(fit.unstd)
+## 
+## Call:
+## lm(formula = Price ~ Type + MPG.city + AirBags + Origin, data = Cars93)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -10.177  -3.853  -1.176   2.865  28.119 
+## 
+## Coefficients:
+##                           Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)                29.6931     4.7225   6.288 1.43e-08 ***
+## TypeLarge                   3.0755     2.7739   1.109 0.270739    
+## TypeMidsize                 5.1573     2.1830   2.362 0.020496 *  
+## TypeSmall                  -0.2819     2.5978  -0.109 0.913856    
+## TypeSporty                  0.3151     2.3294   0.135 0.892722    
+## TypeVan                    -0.8718     2.9036  -0.300 0.764744    
+## MPG.city                   -0.7957     0.1912  -4.162 7.68e-05 ***
+## AirBagsDriver & Passenger   8.9089     2.2844   3.900 0.000195 ***
+## AirBagsDriver only          4.5643     1.6720   2.730 0.007735 ** 
+## Originnon-USA               5.1411     1.4387   3.573 0.000590 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 6.302 on 83 degrees of freedom
+## Multiple R-squared:  0.616,  Adjusted R-squared:  0.5744 
+## F-statistic: 14.79 on 9 and 83 DF,  p-value: 5.166e-14
+
+9.2 Then, using the lm.beta(){lm.beta} function, extract and the standardized regression coefficients for this model and display the results. Store the results in an object named lm.std and display its summary().
+library(lm.beta)
+lm.std <- lm.beta(fit.unstd)
+summary(lm.std)
+## 
+## Call:
+## lm(formula = Price ~ Type + MPG.city + AirBags + Origin, data = Cars93)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -10.177  -3.853  -1.176   2.865  28.119 
+## 
+## Coefficients:
+##                           Estimate Standardized Std. Error t value
+## (Intercept)               29.69310      0.00000    4.72251   6.288
+## TypeLarge                  3.07554      0.10338    2.77387   1.109
+## TypeMidsize                5.15727      0.22813    2.18304   2.362
+## TypeSmall                 -0.28187     -0.01227    2.59777  -0.109
+## TypeSporty                 0.31511      0.01173    2.32941   0.135
+## TypeVan                   -0.87178     -0.02683    2.90359  -0.300
+## MPG.city                  -0.79575     -0.46296    0.19121  -4.162
+## AirBagsDriver & Passenger  8.90892      0.34998    2.28440   3.900
+## AirBagsDriver only         4.56426      0.23687    1.67198   2.730
+## Originnon-USA              5.14108      0.26742    1.43868   3.573
+##                           Pr(>|t|)    
+## (Intercept)               1.43e-08 ***
+## TypeLarge                 0.270739    
+## TypeMidsize               0.020496 *  
+## TypeSmall                 0.913856    
+## TypeSporty                0.892722    
+## TypeVan                   0.764744    
+## MPG.city                  7.68e-05 ***
+## AirBagsDriver & Passenger 0.000195 ***
+## AirBagsDriver only        0.007735 ** 
+## Originnon-USA             0.000590 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 6.302 on 83 degrees of freedom
+## Multiple R-squared:  0.616,  Adjusted R-squared:  0.5744 
+## F-statistic: 14.79 on 9 and 83 DF,  p-value: 5.166e-14
+
+9.3 Answer briefly: what is the difference between the unstandardized and standardized regression results? Why would you use standardized variables or coefficients?
+#there is very little difference other than the additional column in the standardized regression result. If someone is looking to gain more insight such as how much effect each variable has on a dependentvariable they may want to stardardize variables 
+
+9.4 Answer briefly: is it OK to standardize binary or categorical variables like Type or AirBags How would you get around this issue?
+#yes. it is okay to standardize binary or categorical variables and creating dummy variables (n-1) helps get around the issue. 
+
+10.1 Using the read.table() function, read the Credit.csv data set into a data frame named credit. Ensure that you use header=TRUE. We want to use this data to predict credit Rating. Then display a histogram and a qq-plot for the Rating variable. It should be pretty obvious from the histogram that this variable is not normal, although the qq-plot is borderline.
+credit <- read.table("C:\\Users\\zmaddiga\\Documents\\Datasets\\Credit.csv", header = TRUE, sep = ",")
+hist(credit$Rating)
+
+
+qqnorm(credit$Rating)
+qqline(credit$Rating)
+
+ 10.2 Even if the response variable is not normal, if the residual of the regression model is fairly normal, then it is OK to use the response variable without transformation. Let’s explore that. Fit a model called fit.linear to predict Rating, using Income, Age and Gender as predictors. Display a summary() of the results. Then plot the resulting fit.linear model, but just display the residual plot, using the which=2 parameter.
+fit.linear <- lm(Rating ~ Income+Age+Gender, data = credit)
+summary(fit.linear)
+## 
+## Call:
+## lm(formula = Rating ~ Income + Age + Gender, data = credit)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -180.226  -77.204   -0.342   78.129  169.052 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  212.0946    17.1029  12.401   <2e-16 ***
+## Income         3.5034     0.1367  25.628   <2e-16 ***
+## Age           -0.3304     0.2793  -1.183    0.238    
+## GenderFemale   5.4432     9.4804   0.574    0.566    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 94.74 on 396 degrees of freedom
+## Multiple R-squared:  0.6279, Adjusted R-squared:  0.6251 
+## F-statistic: 222.7 on 3 and 396 DF,  p-value: < 2.2e-16
+
+10.3 After inspecting the residual plot, do you think that this model is OK? Or do you think that you need to log-transform the Rating variable?
+#after reviewing the residual plot, I think this model is okay and does not need a log-transform to the rating variable
+
+10.4 Regardless of your answer to 2.2, it would not be a bad idea to test a few log tranformations to see if we get better predictive accuracy. Please fit both, a log-linear model (loging only the response variable Rating) and a log-log (loging only the response variable Rating and Income. Store the results of the first model in an object named fit.log.linear and the second one in an object named fit.log.log. Display the summary() for both models.
+fit.log.linear = lm(log (Rating)~ Income+Age+Gender, data = credit)
+summary(fit.log.linear)
+## 
+## Call:
+## lm(formula = log(Rating) ~ Income + Age + Gender, data = credit)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.99344 -0.21076  0.04697  0.25875  0.52991 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   5.4381923  0.0599182  90.760   <2e-16 ***
+## Income        0.0088430  0.0004789  18.465   <2e-16 ***
+## Age          -0.0013459  0.0009784  -1.376     0.17    
+## GenderFemale  0.0229726  0.0332137   0.692     0.49    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.3319 on 396 degrees of freedom
+## Multiple R-squared:  0.4654, Adjusted R-squared:  0.4614 
+## F-statistic: 114.9 on 3 and 396 DF,  p-value: < 2.2e-16
+fit.log.log = lm(log(Rating)~ log(Income)+Age+Gender, data = credit)
+summary(fit.log.log)
+## 
+## Call:
+## lm(formula = log(Rating) ~ log(Income) + Age + Gender, data = credit)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -0.9002 -0.2105  0.0400  0.2712  0.6775 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)   4.2661905  0.0993755  42.930   <2e-16 ***
+## log(Income)   0.4389052  0.0248821  17.639   <2e-16 ***
+## Age          -0.0011171  0.0009974  -1.120    0.263    
+## GenderFemale  0.0137189  0.0339043   0.405    0.686    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.3388 on 396 degrees of freedom
+## Multiple R-squared:  0.4429, Adjusted R-squared:  0.4387 
+## F-statistic: 104.9 on 3 and 396 DF,  p-value: < 2.2e-16
+
+10.5 Please provide a quick interpretation of the Income or log(Income) coefficient for each of the three fitted models.
+#the income coefficient seems to have a large t-value indicating a strong relationshiop. When combined with it's low p-value this indicates statistically signifiant. Income is our main indicator of credit success.
+
+10.6 Using the Adjusted R-Square as a guide, which of the three models is the best (please note that you cannot compare the 3 models with ANOVA because they are not nested)
+#looking at the adjusted R-squared the log linear model has the highest value. This tells us the model explains the highest % of variables in the model 
+   
